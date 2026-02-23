@@ -156,7 +156,7 @@ func TestClientBeforeSendModify(t *testing.T) {
 
 func TestClientDisabled(t *testing.T) {
 	c := newTestClient(func(cfg *Config) {
-		cfg.Enabled = false
+		cfg.Enabled = Bool(false)
 	})
 	defer c.Shutdown()
 

@@ -24,15 +24,7 @@ func NewClient(cfg Config) *Client {
 	c := &Client{
 		config:       cfg,
 		deduplicator: newDeduplicator(cfg.DeduplicationWindow),
-		enabled:      true, // default enabled
-	}
-
-	// Check the Enabled field — since Go zero-value is false,
-	// we need explicit handling
-	if !cfg.Enabled && cfg.APIKey != "" {
-		// Only disable if Enabled was explicitly set to false
-		// (indicated by having an API key but Enabled=false)
-		c.enabled = false
+		enabled:      *cfg.Enabled, // setDefaults ensures Enabled is non-nil (defaults to true)
 	}
 
 	if c.enabled && !cfg.DryRun {
@@ -108,8 +100,8 @@ func (c *Client) doCapture(message, errType string, skip int, opts ...CaptureOpt
 	file, function, line := extractErrorLocation(skip)
 	stack := captureStack()
 
-	// Build fingerprint
-	fp := generateFingerprint(errType, file, function, line)
+	// Build fingerprint (includes message so wrapper call sites produce distinct fingerprints)
+	fp := generateFingerprint(errType, file, function, line, message)
 
 	// Build event
 	event := &Event{

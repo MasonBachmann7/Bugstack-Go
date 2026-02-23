@@ -7,25 +7,33 @@ import (
 )
 
 func TestGenerateFingerprint(t *testing.T) {
-	fp := generateFingerprint("error", "app.go", "handler", 42)
+	fp := generateFingerprint("error", "app.go", "handler", 42, "something broke")
 	if len(fp) != 16 {
 		t.Errorf("expected 16 char fingerprint, got %d", len(fp))
 	}
 }
 
 func TestFingerprintStable(t *testing.T) {
-	a := generateFingerprint("error", "app.go", "handler", 42)
-	b := generateFingerprint("error", "app.go", "handler", 42)
+	a := generateFingerprint("error", "app.go", "handler", 42, "something broke")
+	b := generateFingerprint("error", "app.go", "handler", 42, "something broke")
 	if a != b {
 		t.Error("expected same fingerprint for same inputs")
 	}
 }
 
 func TestFingerprintDifferent(t *testing.T) {
-	a := generateFingerprint("error", "app.go", "handler", 42)
-	b := generateFingerprint("panic", "app.go", "handler", 42)
+	a := generateFingerprint("error", "app.go", "handler", 42, "something broke")
+	b := generateFingerprint("panic", "app.go", "handler", 42, "something broke")
 	if a == b {
 		t.Error("expected different fingerprints for different inputs")
+	}
+}
+
+func TestFingerprintDifferentMessages(t *testing.T) {
+	a := generateFingerprint("error", "app.go", "handler", 42, "error one")
+	b := generateFingerprint("error", "app.go", "handler", 42, "error two")
+	if a == b {
+		t.Error("expected different fingerprints for different error messages at same location")
 	}
 }
 

@@ -20,8 +20,8 @@ type Config struct {
 	AutoFix bool
 
 	// Enabled is a kill switch. Set to false to disable all capture.
-	// Default: true
-	Enabled bool
+	// Default: true (when nil or unset)
+	Enabled *bool
 
 	// Debug enables verbose SDK logging to stderr.
 	Debug bool
@@ -47,6 +47,9 @@ type Config struct {
 	BeforeSend func(*Event) *Event
 }
 
+// Bool returns a pointer to a bool value. Convenience helper for Config.Enabled.
+func Bool(v bool) *bool { return &v }
+
 func (c *Config) setDefaults() {
 	if c.Endpoint == "" {
 		c.Endpoint = "https://api.bugstack.dev/api/capture"
@@ -63,6 +66,9 @@ func (c *Config) setDefaults() {
 	if c.MaxRetries == 0 {
 		c.MaxRetries = 3
 	}
-	// Enabled defaults to true (zero value of bool is false)
-	// We handle this with a separate check
+	// Enabled defaults to true when not explicitly set
+	if c.Enabled == nil {
+		t := true
+		c.Enabled = &t
+	}
 }

@@ -10,8 +10,10 @@ import (
 )
 
 // generateFingerprint creates a stable SHA-256 fingerprint for an error.
-func generateFingerprint(errType, file, function string, line int) string {
-	key := fmt.Sprintf("%s:%s:%s:%d", errType, file, function, line)
+// Includes the error message so that different errors from the same call site
+// (e.g., through a wrapper function) produce distinct fingerprints.
+func generateFingerprint(errType, file, function string, line int, message string) string {
+	key := fmt.Sprintf("%s:%s:%s:%d:%s", errType, file, function, line, message)
 	h := sha256.Sum256([]byte(key))
 	return fmt.Sprintf("%x", h[:8]) // 16 hex chars
 }
