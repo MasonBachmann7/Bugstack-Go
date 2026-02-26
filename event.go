@@ -60,11 +60,12 @@ func (e *Event) toPayload(cfg Config) map[string]any {
 	payload := map[string]any{
 		"apiKey": cfg.APIKey,
 		"error": map[string]any{
-			"message":    e.Message,
-			"stackTrace": e.StackTrace,
-			"file":       e.File,
-			"function":   e.Function,
-			"fingerprint": e.Fingerprint,
+			"message":       e.Message,
+			"stackTrace":    e.StackTrace,
+			"file":          e.File,
+			"function":      e.Function,
+			"fingerprint":   e.Fingerprint,
+			"exceptionType": e.ExceptionType,
 		},
 		"environment": map[string]any{
 			"language":        e.Environment.Language,
@@ -78,10 +79,14 @@ func (e *Event) toPayload(cfg Config) map[string]any {
 	}
 
 	if e.Request != nil {
-		payload["request"] = map[string]any{
+		req := map[string]any{
 			"route":  e.Request.Route,
 			"method": e.Request.Method,
 		}
+		if len(e.Request.QueryParams) > 0 {
+			req["queryParams"] = e.Request.QueryParams
+		}
+		payload["request"] = req
 	}
 
 	if cfg.ProjectID != "" {

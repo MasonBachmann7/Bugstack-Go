@@ -4,6 +4,7 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 
 	bugstack "github.com/MasonBachmann7/bugstack-go"
 )
@@ -24,8 +25,9 @@ func NetHTTP(next http.Handler) http.Handler {
 					msg := fmt.Sprintf("panic: %v", rec)
 					client.CaptureMessage(msg,
 						bugstack.WithRequest(&bugstack.RequestContext{
-							Route:  r.URL.Path,
-							Method: r.Method,
+							Route:       r.URL.Path,
+							Method:      r.Method,
+							QueryParams: flattenQuery(r.URL.Query()),
 						}),
 						bugstack.WithMetadata(map[string]any{
 							"framework": "net/http",
@@ -39,6 +41,20 @@ func NetHTTP(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+// flattenQuery converts url.Values (multi-valued) to a single-valued map.
+func flattenQuery(values url.Values) map[string]string {
+	if len(values) == 0 {
+		return nil
+	}
+	flat := make(map[string]string, len(values))
+	for k, v := range values {
+		if len(v) > 0 {
+			flat[k] = v[0]
+		}
+	}
+	return flat
 }
 
 // NetHTTPFunc wraps a handler function with panic recovery.
